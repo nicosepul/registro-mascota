@@ -45,6 +45,16 @@
       </div>
       <div class="card-body p-0">
         <div class="table-responsive">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              Mostrar
+              <select v-model.number="perPage" class="form-select form-select-sm d-inline-block" style="width: auto;">
+                <option v-for="op in opcionesPagina" :key="op" :value="op">{{ op }}</option>
+              </select>
+              por página
+            </div>
+            <div>Mostrando {{ desde }} - {{ hasta }} de {{ mascotas.length }}</div>
+          </div>
           <table class="table mbm-0">
             <thead class="table-light">
               <tr>
@@ -58,7 +68,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="mascota in mascotas" :key="mascota.id">
+              <tr v-for="mascota in mascotasPag" :key="mascota.id">
                 <td>{{ mascota.id }}</td>
                 <td>{{ mascota.dueno.rut }}</td>
                 <td>{{ mascota.dueno.nombre }} {{ mascota.dueno.apellido }}</td>
@@ -72,6 +82,19 @@
               </tr>
             </tbody>
           </table>
+          <nav class="d-flex justify-content-center my-2" v-if="totalPaginas > 1">
+            <ul class="pagination mb-0">
+              <li class="page-item" :class="{ disabled: paginaActual === 1 }">
+                <button class="page-link" @click="cambiarPagina(paginaActual - 1)">Anterior</button>
+              </li>
+              <li class="page-item" :class="{ active: paginaActual === n }" v-for="n in totalPaginas" :key="n">
+                <button class="page-link" @click="cambiarPagina(n)">{{ n }}</button>
+              </li>
+              <li class="page-item" :class="{ disabled: paginaActual === totalPaginas }">
+                <button class="page-link" @click="cambiarPagina(paginaActual + 1)">Siguiente</button>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
     </div>
@@ -111,7 +134,10 @@ export default {
         nombre_mascota: '',
         raza_id: '',
         edad: ''
-      }
+      },
+      perPage: 10,
+      paginaActual: 1,
+      opcionesPagina: [5, 10, 20, 50]
     }
   },
 
@@ -220,6 +246,28 @@ export default {
         raza_id: '',
         edad: ''
       }
+    },
+
+    cambiarPagina(nuevaPagina) {
+      if (nuevaPagina < 1 || nuevaPagina > this.totalPaginas) return
+      this.paginaActual = nuevaPagina
+    }
+  },
+  computed: {
+    totalPaginas() {
+      return Math.ceil(this.mascotas.length / this.perPage) || 1
+    },
+    mascotasPag() {
+      const inicio = (this.paginaActual - 1) * this.perPage
+      const fin = inicio + this.perPage
+      return this.mascotas.slice(inicio, fin)
+    },
+    desde() {
+      if (this.mascotas.length === 0) return 0
+      return (this.paginaActual - 1) * this.perPage + 1
+    },
+    hasta() {
+      return Math.min(this.paginaActual * this.perPage, this.mascotas.length)
     }
   }
 }

@@ -10,7 +10,13 @@ class Atencion extends Model
 
     protected $fillable = [
         'mascota_id',
-        'motivo',
+        'fecha_atencion',
+        'motivo_consulta',
+        'sintomas',
+        'diagnostico',
+        'tratamiento',
+        'observaciones',
+        'atendido',
     ];
 
     // Una atención pertenece a una mascota

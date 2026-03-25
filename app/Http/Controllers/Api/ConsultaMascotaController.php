@@ -52,21 +52,33 @@ class ConsultaMascotaController extends Controller
     }
 
     // 3) Registrar atención de mascota
-    public function registrarAtencion(Request $request)
-    {
-        $request->validate([
-            'mascota_id' => 'required|exists:mascotas,id',
-            'motivo' => 'required|string|max:255',
-        ]);
+public function registrarAtencion(Request $request)
+{
+    $request->validate([
+        'mascota_id' => 'required|exists:mascotas,id',
+        'fecha_atencion' => 'required|date',
+        'motivo_consulta' => 'required|string|max:255',
+        'sintomas' => 'nullable|string',
+        'diagnostico' => 'nullable|string',
+        'tratamiento' => 'nullable|string',
+        'observaciones' => 'nullable|string',
+        'atendido' => 'required|boolean',
+    ]);
 
-        $atencion = Atencion::create([
-            'mascota_id' => $request->mascota_id,
-            'motivo' => $request->motivo,
-        ]);
+    $atencion = Atencion::create([
+        'mascota_id' => $request->mascota_id,
+        'fecha_atencion' => $request->fecha_atencion,
+        'motivo_consulta' => $request->motivo_consulta,
+        'sintomas' => $request->sintomas,
+        'diagnostico' => $request->diagnostico,
+        'tratamiento' => $request->tratamiento,
+        'observaciones' => $request->observaciones,
+        'atendido' => $request->atendido,
+    ]);
 
-        return response()->json([
-            'mensaje' => 'Atención registrada correctamente',
-            'atencion' => $atencion
-        ], 201);
-    }
+    return response()->json([
+        'mensaje' => 'Atención registrada correctamente',
+        'atencion' => $atencion
+    ], 201);
+}
 }
