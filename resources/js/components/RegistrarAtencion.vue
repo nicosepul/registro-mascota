@@ -28,11 +28,11 @@
     <label>Observaciones:</label>
     <textarea v-model="form.observaciones" placeholder="Ej: Control en 3 días"></textarea>
 
-    <div style="margin-top: 15px; margin-bottom: 15px;">
-      <label style="display: flex; align-items: center; gap: 8px; font-weight: bold;">
-        <input v-model="form.atendido" type="checkbox" />
-        Atención completada
-      </label>
+    <div style="margin: 10px 0;">
+        <label style="display: flex; align-items: center; gap: 3px; font-weight: bold; margin: 0;">
+            <input v-model="form.atendido" type="checkbox" style="width: auto; margin: 0; padding: 0;" />
+            Atención completada
+        </label>
     </div>
 
     <button @click="registrarAtencion">Guardar Atención</button>

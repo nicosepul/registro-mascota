@@ -2,20 +2,12 @@
   <div class="container mt-5">
     <h1 class="mb-4">Registro de Mascotas</h1>
 
-    <div style="margin-bottom: 20px;">
-      <button @click="vistaActual = 'formulario'">Formulario Principal</button>
-      <button @click="vistaActual = 'buscar'" style="margin-left: 10px;">Buscar Mascota</button>
-      <button @click="vistaActual = 'ingreso'" style="margin-left: 10px;">Ingreso Atención</button>
-      <button @click="vistaActual = 'listarPorRut'" style="margin-left: 10px;">Mascotas por RUT</button>
-    </div>
-
     <div v-if="vistaActual === 'formulario'">
       <form @submit.prevent="guardarMascota" class="card shadow p-4 mb-5">
       <h5 class="mb-3">Datos del Dueño</h5>
       
       <div class="mb-3">
-        <label class="form-label">RUT (Ej: 12.345.678-9)</label>
-        <input v-model="form.rut" type="text" class="form-control" @blur="validarRut" placeholder="12.345.678-9">
+        <input v-model="form.rut" type="text" class="form-control" @blur="validarRut" placeholder="RUT">
         <small v-if="errores.rut" class="text-danger">{{ errores.rut }}</small>
       </div>
 
@@ -147,16 +139,54 @@ export default {
   },
 
   methods: {
+    formatearRut() {
+    let valor = this.form.rut.replace(/[^0-9kK]/g, '')
+
+    if (valor.length <= 1) {
+      this.form.rut = valor
+      return
+    }
+
+    let cuerpo = valor.slice(0, -1)
+    let dv = valor.slice(-1).toUpperCase()
+
+    cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+    this.form.rut = cuerpo + '-' + dv
+  },
+
     validarRut() {
       this.errores.rut = ''
+
       if (!this.form.rut) {
         this.errores.rut = 'El RUT es obligatorio'
         return false
       }
-      if (!/^\d{1,2}\.\d{3}\.\d{3}-[0-9Kk]$/.test(this.form.rut)) {
+
+      if (!/^[0-9.]+-[0-9kK]{1}$/.test(this.form.rut)) {
         this.errores.rut = 'Formato: XX.XXX.XXX-K'
         return false
       }
+
+      let tmp = this.form.rut.split('-')
+      let dv = tmp[1].toUpperCase()
+      let cuerpo = tmp[0].replace(/\./g, '')
+
+      let res = 0
+      let multiplicador = 2
+
+      for (let i = cuerpo.length - 1; i >= 0; i--) {
+        res += parseInt(cuerpo.charAt(i)) * multiplicador
+        multiplicador = multiplicador === 7 ? 2 : multiplicador + 1
+      }
+
+      let dvr = 11 - (res % 11)
+      dvr = dvr === 11 ? '0' : dvr === 10 ? 'K' : dvr.toString()
+
+      if (dv !== dvr) {
+        this.errores.rut = 'El RUT ingresado no es válido'
+        return false
+      }
+
       return true
     },
 

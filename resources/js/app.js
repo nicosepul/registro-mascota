@@ -1,4 +1,7 @@
 import { createApp } from 'vue'
-import MascotaApp from './components/MascotaApp.vue'
+import App from './components/App.vue'
+import router from './router'
 
-createApp(MascotaApp).mount('#app')
+createApp(App)
+  .use(router)
+  .mount('#app')
