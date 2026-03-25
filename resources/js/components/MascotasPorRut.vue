@@ -1,33 +1,41 @@
 <template>
   <div>
-    <h2>Buscar Mascotas por RUT del Dueño</h2>
+    <h2>Gestión de Mascotas por RUT</h2>
 
-    <input v-model="rut" type="text" placeholder="Rut del dueño" />
-    <button @click="buscarMascotas">Buscar</button>
+    <div class="search-box">
+      <input v-model="rut" type="text" placeholder="Ingrese RUT del dueño" @keyup.enter="buscarMascotas" />
+      <button @click="buscarMascotas">Consultar</button>
+    </div>
 
     <div v-if="mascotas.length > 0" style="margin-top: 20px;">
-      <h3>Listado de Mascotas</h3>
-
-      <table border="1" cellpadding="8" cellspacing="0" width="100%">
+      <h3>Mascotas encontradas</h3>
+      <table border="1" cellpadding="8" width="100%">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Nombre Mascota</th>
+            <th>Nombre</th>
             <th>Raza</th>
-            <th>Edad</th>
-            <th>Dueño</th>
+            <th>Acción</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="mascota in mascotas" :key="mascota.id">
-            <td>{{ mascota.id }}</td>
-            <td>{{ mascota.nombre }}</td>
-            <td>{{ mascota.raza.nombre }}</td>
-            <td>{{ mascota.edad }}</td>
-            <td>{{ mascota.dueno.nombre }}</td>
+          <tr v-for="m in mascotas" :key="m.id">
+            <td>{{ m.nombre }}</td>
+            <td>{{ m.raza.nombre }}</td>
+            <td><button @click="resultado = m">Ver Detalle</button></td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div v-if="resultado" class="detalle-card">
+        <h3>Ficha Técnica: {{ resultado.nombre }}</h3>
+        <p><strong>Dueño:</strong> {{ resultado.dueno.nombre }}</p>
+        <p><strong>RUT:</strong> {{ resultado.dueno.rut }}</p>
+        <p><strong>Dirección:</strong> {{ resultado.dueno.direccion }}</p>
+        <p><strong>Mascota:</strong> {{ resultado.nombre }}</p>
+        <p><strong>Raza:</strong> {{ resultado.raza.nombre }}</p>
+        <p><strong>Edad:</strong> {{ resultado.edad }} años</p>
+        <button @click="resultado = null">Cerrar Detalle</button>
     </div>
   </div>
 </template>
@@ -37,38 +45,94 @@ export default {
   data() {
     return {
       rut: '',
-      mascotas: []
+      mascotas: [],
+      resultado: null
     }
   },
   methods: {
     async buscarMascotas() {
-      this.mascotas = []
+      if (!this.rut) return alert("Ingrese un RUT");
+      
+      this.mascotas = [];
+      this.resultado = null;
 
-      const respuesta = await fetch(`/api/mascotas-por-rut/${this.rut}`)
-      const data = await respuesta.json()
+      try {
+        const res = await fetch(`/api/mascotas-por-rut/${this.rut}`);
+        const data = await res.json();
 
-      if (!respuesta.ok) {
-        alert(data.mensaje || 'No se encontraron mascotas')
-        return
+        if (!res.ok) throw new Error(data.mensaje || 'No se encontraron registros');
+        
+        this.mascotas = data;
+        // Si solo hay una mascota, mostrar el detalle automáticamente
+        if (this.mascotas.length === 1) this.resultado = this.mascotas[0];
+        
+      } catch (error) {
+        alert(error.message);
       }
-
-      this.mascotas = data
     }
   }
 }
 </script>
 
 <style scoped>
+.main-container {
+  max-width: 800px;
+  margin: 20px auto;
+  font-family: sans-serif;
+  color: #333;
+}
+
+/* Espaciado de títulos y buscador */
+h2, h3 { margin: 25px 0 15px; }
+
+.search-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
 input {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
+  flex: 1;
   padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Tabla simple y aireada */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  text-align: left;
+  padding: 12px 8px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Ficha de detalle limpia */
+.detalle-card {
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  line-height: 1.8; /* Da aire entre líneas de texto */
+}
+
+.detalle-card h3 {
+  margin-top: 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
 }
 
 button {
-  padding: 8px 12px;
+  padding: 8px 15px;
   cursor: pointer;
-  margin-bottom: 15px;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
+
+button:hover { background: #e0e0e0; }
 </style>

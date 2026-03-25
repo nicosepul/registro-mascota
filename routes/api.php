@@ -12,7 +12,6 @@ Route::get('/mascotas/{id}', [MascotaController::class, 'show']);
 Route::put('/mascotas/{id}', [MascotaController::class, 'update']);
 Route::delete('/mascotas/{id}', [MascotaController::class, 'destroy']);
 
-Route::post('/buscar-mascota', [ConsultaMascotaController::class, 'buscarPorRutYNombre']);
 Route::get('/mascotas-por-rut/{rut}', [ConsultaMascotaController::class, 'mascotasPorRut']);
 Route::post('/registrar-atencion', [ConsultaMascotaController::class, 'registrarAtencion']);
 

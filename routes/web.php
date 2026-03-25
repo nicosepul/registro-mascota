@@ -6,10 +6,6 @@ Route::get('/', function () {
     return view('app');
 });
 
-Route::get('/buscar-mascota', function () {
-    return view('app');
-});
-
 Route::get('/registrar-atencion', function () {
     return view('app');
 });

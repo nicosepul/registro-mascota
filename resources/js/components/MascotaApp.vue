@@ -110,13 +110,11 @@
 </template>
 
 <script>
-import BuscarMascota from './BuscarMascota.vue'
 import RegistrarAtencion from './RegistrarAtencion.vue'
 import MascotasPorRut from './MascotasPorRut.vue'
 
 export default {
   components: {
-    BuscarMascota,
     RegistrarAtencion,
     MascotasPorRut
   },
