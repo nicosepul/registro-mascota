@@ -81,4 +81,14 @@ public function registrarAtencion(Request $request)
         'atencion' => $atencion
     ], 201);
 }
+
+    // 4) Ver historial de atenciones de una mascota
+public function verAtenciones($mascota_id)
+{
+    $atenciones = \App\Models\Atencion::where('mascota_id', $mascota_id)
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return response()->json($atenciones);
+}
 }

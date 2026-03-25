@@ -4,9 +4,11 @@
 
     <nav class="menu">
       <router-link to="/">Formulario Principal</router-link>
+      <router-link to="/mascotas-por-rut">Mascotas por RUT</router-link>
       <router-link to="/buscar-mascota">Buscar Mascota</router-link>
       <router-link to="/registrar-atencion">Registrar Atención</router-link>
-      <router-link to="/mascotas-por-rut">Mascotas por RUT</router-link>
+      <router-link to="/visor-atenciones">Visor de Atenciones</router-link>
+      
     </nav>
 
     <hr />

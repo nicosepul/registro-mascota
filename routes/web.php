@@ -17,3 +17,7 @@ Route::get('/registrar-atencion', function () {
 Route::get('/mascotas-por-rut', function () {
     return view('app');
 });
+
+Route::get('/visor-atenciones', function () {
+    return view('app');
+});

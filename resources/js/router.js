@@ -4,6 +4,7 @@ import MascotaApp from './components/MascotaApp.vue'
 import BuscarMascota from './components/BuscarMascota.vue'
 import RegistrarAtencion from './components/RegistrarAtencion.vue'
 import MascotasPorRut from './components/MascotasPorRut.vue'
+import VisorAtenciones from './components/VisorAtenciones.vue'
 
 const routes = [
   {
@@ -21,7 +22,11 @@ const routes = [
   {
     path: '/mascotas-por-rut',
     component: MascotasPorRut
-  }
+  },
+  {
+    path: '/visor-atenciones',
+    component: VisorAtenciones
+  },
 ]
 
 const router = createRouter({
