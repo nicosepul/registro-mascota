@@ -13,7 +13,18 @@
 
       <input v-model="form.nombre_dueno" type="text" placeholder="Nombre" class="form-control mb-3">
       <input v-model="form.apellido_dueno" type="text" placeholder="Apellido" class="form-control mb-3">
-      <input v-model="form.telefono" type="text" placeholder="Teléfono" class="form-control mb-3">
+      <div class="mb-3">
+        <input
+          type="text"
+          v-model="form.telefono"
+          class="form-control"
+          @blur="validarTelefono"
+          placeholder="Telefono"
+        >
+        <small v-if="errores.telefono" class="text-danger">
+          {{ errores.telefono }}
+        </small>
+      </div>
       <input v-model="form.direccion" type="text" placeholder="Dirección" class="form-control mb-4">
 
       <h5 class="mb-3">Datos de la Mascota</h5>
@@ -116,7 +127,6 @@ export default {
       razas: [],
       editando: false,
       mascotaId: null,
-      errores: { rut: '' },
       form: {
         rut: '',
         nombre_dueno: '',
@@ -126,6 +136,10 @@ export default {
         nombre_mascota: '',
         raza_id: '',
         edad: ''
+      },
+      errores: { 
+        rut: '',
+        telefono: ''
       },
       perPage: 10,
       paginaActual: 1,
@@ -190,6 +204,24 @@ export default {
       return true
     },
 
+  validarTelefono() {
+    this.errores.telefono = ''
+
+    if (!this.form.telefono) {
+      this.errores.telefono = 'El teléfono es obligatorio'
+      return false
+    }
+
+    const telefonoLimpio = this.form.telefono.replace(/[\s-]/g, '')
+
+    if (!/^(\+56|56)?9\d{8}$/.test(telefonoLimpio)) {
+      this.errores.telefono = 'Formato válido: +56 9 1234 5678 o 912345678'
+      return false
+    }
+
+    return true
+  },
+
     async obtenerMascotas() {
       try {
         this.mascotas = await (await fetch('/api/mascotas')).json()
@@ -210,6 +242,7 @@ export default {
 
     async guardarMascota() {
       if (!this.validarRut()) return alert('RUT inválido')
+      if (!this.validarTelefono()) return alert('Teléfono inválido')
       
       const campos = [this.form.nombre_dueno, this.form.apellido_dueno, this.form.telefono, 
                       this.form.direccion, this.form.nombre_mascota, this.form.raza_id, this.form.edad]
