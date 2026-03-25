@@ -9,7 +9,8 @@
       <button @click="vistaActual = 'listarPorRut'" style="margin-left: 10px;">Mascotas por RUT</button>
     </div>
 
-    <form @submit.prevent="guardarMascota" class="card shadow p-4 mb-5">
+    <div v-if="vistaActual === 'formulario'">
+      <form @submit.prevent="guardarMascota" class="card shadow p-4 mb-5">
       <h5 class="mb-3">Datos del Dueño</h5>
       
       <div class="mb-3">
@@ -74,13 +75,28 @@
         </div>
       </div>
     </div>
+    </div>
+
+    <BuscarMascota v-if="vistaActual === 'buscar'" />
+    <RegistrarAtencion v-if="vistaActual === 'ingreso'" />
+    <MascotasPorRut v-if="vistaActual === 'listarPorRut'" />
   </div>
 </template>
 
 <script>
+import BuscarMascota from './BuscarMascota.vue'
+import RegistrarAtencion from './RegistrarAtencion.vue'
+import MascotasPorRut from './MascotasPorRut.vue'
+
 export default {
+  components: {
+    BuscarMascota,
+    RegistrarAtencion,
+    MascotasPorRut
+  },
   data() {
     return {
+      vistaActual: 'formulario',
       mascotas: [],
       razas: [],
       editando: false,

@@ -26,4 +26,10 @@ class Mascota extends Model
     {
         return $this->belongsTo(Raza::class, 'raza_id');
     }
+
+     // Una mascota puede tener muchas atenciones
+    public function atenciones()
+    {
+        return $this->hasMany(Atencion::class, 'mascota_id');
+    }
 }
