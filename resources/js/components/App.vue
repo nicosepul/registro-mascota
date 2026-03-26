@@ -1,42 +1,29 @@
 <template>
-  <div class="contenedor">
-    <h1>Sistema de Registro de Mascotas</h1>
+  <div class="container mt-4">
+    <div class="card shadow p-4">
+      <h1 class="text-center mb-4">Sistema de Registro de Mascotas</h1>
 
-    <nav class="menu">
-      <router-link to="/">Registro mascotas</router-link>
-      <router-link to="/mascotas-por-rut">Mascotas por dueño</router-link>
-      <router-link to="/registrar-atencion">Registrar Atención</router-link>
-      <router-link to="/visor-atenciones">Visor de Atenciones</router-link>
-      
-    </nav>
+      <nav class="nav nav-pills flex-wrap gap-2 mb-4 justify-content-center">
+        <router-link to="/" class="btn btn-outline-primary">
+          Registro mascotas
+        </router-link>
 
-    <hr />
+        <router-link to="/mascotas-por-rut" class="btn btn-outline-success">
+          Mascotas por dueño
+        </router-link>
 
-    <router-view />
+        <router-link to="/registrar-atencion" class="btn btn-outline-warning">
+          Registrar Atención
+        </router-link>
+
+        <router-link to="/visor-atenciones" class="btn btn-outline-danger">
+          Visor de Atenciones
+        </router-link>
+      </nav>
+
+      <hr />
+
+      <router-view />
+    </div>
   </div>
 </template>
-
-<style scoped>
-.contenedor {
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 20px;
-}
-
-.menu {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.menu a {
-  text-decoration: none;
-  color: blue;
-  font-weight: bold;
-}
-
-.menu a.router-link-active {
-  color: darkred;
-}
-</style>
