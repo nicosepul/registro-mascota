@@ -103,6 +103,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'VisorAtenciones',
   data() {
@@ -129,8 +131,7 @@ export default {
       }
 
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/mascotas-por-rut/${this.rut}`)
-        const data = await res.json()
+        const { data } = await axios.get(`/api/mascotas-por-rut/${this.rut}`)
 
         if (!Array.isArray(data) || data.length === 0) {
           this.mensaje = 'No se encontraron mascotas para ese RUT'
@@ -140,7 +141,7 @@ export default {
         this.mascotas = data
       } catch (error) {
         console.error(error)
-        this.mensaje = 'Error al buscar mascotas'
+        this.mensaje = error.response?.data?.mensaje || 'Error al buscar mascotas'
       }
     },
 
@@ -151,8 +152,7 @@ export default {
       this.mensaje = ''
 
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/atenciones/${mascota.id}`)
-        const data = await res.json()
+        const { data } = await axios.get(`/api/atenciones/${mascota.id}`)
 
         this.atenciones = Array.isArray(data) ? data : []
 
@@ -161,7 +161,7 @@ export default {
         }
       } catch (error) {
         console.error(error)
-        this.mensaje = 'Error al cargar las atenciones'
+        this.mensaje = error.response?.data?.mensaje || 'Error al cargar las atenciones'
       }
     },
 

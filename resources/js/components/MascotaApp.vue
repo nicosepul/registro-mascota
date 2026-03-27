@@ -110,6 +110,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 import RegistrarAtencion from './RegistrarAtencion.vue'
 import MascotasPorRut from './MascotasPorRut.vue'
 
@@ -152,19 +153,19 @@ export default {
 
   methods: {
     formatearRut() {
-    let valor = this.form.rut.replace(/[^0-9kK]/g, '')
+      let valor = this.form.rut.replace(/[^0-9kK]/g, '')
 
-    if (valor.length <= 1) {
-      this.form.rut = valor
-      return
-    }
+      if (valor.length <= 1) {
+        this.form.rut = valor
+        return
+      }
 
-    let cuerpo = valor.slice(0, -1)
-    let dv = valor.slice(-1).toUpperCase()
+      let cuerpo = valor.slice(0, -1)
+      let dv = valor.slice(-1).toUpperCase()
 
-    cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-    this.form.rut = cuerpo + '-' + dv
-  },
+      cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+      this.form.rut = cuerpo + '-' + dv
+    },
 
     validarRut() {
       this.errores.rut = ''
@@ -202,27 +203,28 @@ export default {
       return true
     },
 
-  validarTelefono() {
-    this.errores.telefono = ''
+    validarTelefono() {
+      this.errores.telefono = ''
 
-    if (!this.form.telefono) {
-      this.errores.telefono = 'El teléfono es obligatorio'
-      return false
-    }
+      if (!this.form.telefono) {
+        this.errores.telefono = 'El teléfono es obligatorio'
+        return false
+      }
 
-    const telefonoLimpio = this.form.telefono.replace(/[\s-]/g, '')
+      const telefonoLimpio = this.form.telefono.replace(/[\s-]/g, '')
 
-    if (!/^(\+56|56)?9\d{8}$/.test(telefonoLimpio)) {
-      this.errores.telefono = 'Formato válido: +56 9 1234 5678 o 912345678'
-      return false
-    }
+      if (!/^(\+56|56)?9\d{8}$/.test(telefonoLimpio)) {
+        this.errores.telefono = 'Formato válido: +56 9 1234 5678 o 912345678'
+        return false
+      }
 
-    return true
-  },
+      return true
+    },
 
     async obtenerMascotas() {
       try {
-        this.mascotas = await (await fetch('/api/mascotas')).json()
+        const { data } = await axios.get('/api/mascotas')
+        this.mascotas = data
       } catch (e) {
         console.error('Error:', e)
         alert('Error al cargar mascotas')
@@ -231,7 +233,8 @@ export default {
 
     async obtenerRazas() {
       try {
-        this.razas = await (await fetch('/api/razas')).json()
+        const { data } = await axios.get('/api/razas')
+        this.razas = data
       } catch (e) {
         console.error('Error:', e)
         alert('Error al cargar razas')
@@ -241,28 +244,39 @@ export default {
     async guardarMascota() {
       if (!this.validarRut()) return alert('RUT inválido')
       if (!this.validarTelefono()) return alert('Teléfono inválido')
-      
-      const campos = [this.form.nombre_dueno, this.form.apellido_dueno, this.form.telefono, 
-                      this.form.direccion, this.form.nombre_mascota, this.form.raza_id, this.form.edad]
+
+      const campos = [
+        this.form.nombre_dueno,
+        this.form.apellido_dueno,
+        this.form.telefono,
+        this.form.direccion,
+        this.form.nombre_mascota,
+        this.form.raza_id,
+        this.form.edad
+      ]
+
       if (campos.some(c => !c)) return alert('Complete todos los campos')
 
       try {
-        const url = this.editando ? `/api/mascotas/${this.mascotaId}` : '/api/mascotas'
-        const res = await fetch(url, {
-          method: this.editando ? 'PUT' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.form)
-        })
+        let response
 
-        const data = await res.json()
-        if (!res.ok) return alert('Error: ' + (data.message || 'Desconocido'))
+        if (this.editando) {
+          response = await axios.put(`/api/mascotas/${this.mascotaId}`, this.form)
+        } else {
+          response = await axios.post('/api/mascotas', this.form)
+        }
 
-        alert(data.mensaje)
+        alert(response.data.mensaje)
         this.resetear()
-        this.obtenerMascotas()
+        await this.obtenerMascotas()
       } catch (e) {
         console.error(e)
-        alert('Error al guardar')
+
+        if (e.response) {
+          alert('Error: ' + (e.response.data.message || 'Desconocido'))
+        } else {
+          alert('Error al guardar')
+        }
       }
     },
 
@@ -283,10 +297,11 @@ export default {
 
     async eliminarMascota(id) {
       if (!confirm('¿Eliminar mascota?')) return
+
       try {
-        const data = await (await fetch(`/api/mascotas/${id}`, { method: 'DELETE' })).json()
+        const { data } = await axios.delete(`/api/mascotas/${id}`)
         alert(data.mensaje)
-        this.obtenerMascotas()
+        await this.obtenerMascotas()
       } catch (e) {
         console.error(e)
         alert('Error al eliminar')
@@ -297,6 +312,7 @@ export default {
       this.editando = false
       this.mascotaId = null
       this.errores.rut = ''
+      this.errores.telefono = ''
       this.form = {
         rut: '',
         nombre_dueno: '',
@@ -314,6 +330,7 @@ export default {
       this.paginaActual = nuevaPagina
     }
   },
+
   computed: {
     totalPaginas() {
       return Math.ceil(this.mascotas.length / this.perPage) || 1

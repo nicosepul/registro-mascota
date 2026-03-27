@@ -40,6 +40,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   data() {
     return {
@@ -67,39 +69,34 @@ export default {
     },
 
     async obtenerMascotas() {
-      const respuesta = await fetch('/api/mascotas')
-      this.mascotas = await respuesta.json()
+      try {
+        const { data } = await axios.get('/api/mascotas')
+        this.mascotas = data
+      } catch (error) {
+        console.error(error)
+        alert('Error al cargar mascotas')
+      }
     },
 
     async registrarAtencion() {
-      const respuesta = await fetch('/api/registrar-atencion', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(this.form)
-      })
+      try {
+        const { data } = await axios.post('/api/registrar-atencion', this.form)
 
-      const data = await respuesta.json()
+        alert(data.mensaje)
 
-      if (!respuesta.ok) {
-        alert('Error al registrar la atención')
-        console.log(data)
-        return
-      }
-
-      alert(data.mensaje)
-
-      this.form = {
-        mascota_id: '',
-        fecha_atencion: this.fechaActual(),
-        motivo_consulta: '',
-        sintomas: '',
-        diagnostico: '',
-        tratamiento: '',
-        observaciones: '',
-        atendido: false
+        this.form = {
+          mascota_id: '',
+          fecha_atencion: this.fechaActual(),
+          motivo_consulta: '',
+          sintomas: '',
+          diagnostico: '',
+          tratamiento: '',
+          observaciones: '',
+          atendido: false
+        }
+      } catch (error) {
+        alert(error.response?.data?.mensaje || 'Error al registrar la atención')
+        console.log(error.response?.data || error)
       }
     }
   }

@@ -41,6 +41,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   data() {
     return {
@@ -57,21 +59,22 @@ export default {
       this.resultado = null;
 
       try {
-        const res = await fetch(`/api/mascotas-por-rut/${this.rut}`);
-        const data = await res.json();
+        const { data } = await axios.get(`/api/mascotas-por-rut/${this.rut}`);
 
-        if (!res.ok) throw new Error(data.mensaje || 'No se encontraron registros');
-        
         this.mascotas = data;
+
         // Si solo hay una mascota, mostrar el detalle automáticamente
-        if (this.mascotas.length === 1) this.resultado = this.mascotas[0];
-        
+        if (this.mascotas.length === 1) {
+          this.resultado = this.mascotas[0];
+        }
+
       } catch (error) {
-        alert(error.message);
+        alert(error.response?.data?.mensaje || 'No se encontraron registros');
       }
     }
   }
 }
+
 </script>
 
 <style scoped>
