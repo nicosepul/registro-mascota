@@ -1,9 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MascotaController;
 use App\Http\Controllers\Api\ConsultaMascotaController;
 
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout']);
 
 Route::get('/mascotas', [MascotaController::class, 'index']);
 Route::get('/razas', [MascotaController::class, 'razas']);

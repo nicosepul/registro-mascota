@@ -103,22 +103,13 @@
     </div>
     </div>
 
-    <BuscarMascota v-if="vistaActual === 'buscar'" />
-    <RegistrarAtencion v-if="vistaActual === 'ingreso'" />
-    <MascotasPorRut v-if="vistaActual === 'listarPorRut'" />
   </div>
 </template>
 
 <script>
-import axios from 'axios'
-import RegistrarAtencion from './RegistrarAtencion.vue'
-import MascotasPorRut from './MascotasPorRut.vue'
 
 export default {
-  components: {
-    RegistrarAtencion,
-    MascotasPorRut
-  },
+
   data() {
     return {
       vistaActual: 'formulario',
@@ -152,7 +143,7 @@ export default {
   },
 
   methods: {
-    formatearRut() {
+      formatearRut() {
       let valor = this.form.rut.replace(/[^0-9kK]/g, '')
 
       if (valor.length <= 1) {
@@ -223,8 +214,7 @@ export default {
 
     async obtenerMascotas() {
       try {
-        const { data } = await axios.get('/api/mascotas')
-        this.mascotas = data
+        this.mascotas = await (await fetch('/api/mascotas')).json()
       } catch (e) {
         console.error('Error:', e)
         alert('Error al cargar mascotas')
@@ -233,8 +223,7 @@ export default {
 
     async obtenerRazas() {
       try {
-        const { data } = await axios.get('/api/razas')
-        this.razas = data
+        this.razas = await (await fetch('/api/razas')).json()
       } catch (e) {
         console.error('Error:', e)
         alert('Error al cargar razas')
@@ -244,39 +233,28 @@ export default {
     async guardarMascota() {
       if (!this.validarRut()) return alert('RUT inválido')
       if (!this.validarTelefono()) return alert('Teléfono inválido')
-
-      const campos = [
-        this.form.nombre_dueno,
-        this.form.apellido_dueno,
-        this.form.telefono,
-        this.form.direccion,
-        this.form.nombre_mascota,
-        this.form.raza_id,
-        this.form.edad
-      ]
-
+      
+      const campos = [this.form.nombre_dueno, this.form.apellido_dueno, this.form.telefono, 
+                      this.form.direccion, this.form.nombre_mascota, this.form.raza_id, this.form.edad]
       if (campos.some(c => !c)) return alert('Complete todos los campos')
 
       try {
-        let response
+        const url = this.editando ? `/api/mascotas/${this.mascotaId}` : '/api/mascotas'
+        const res = await fetch(url, {
+          method: this.editando ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.form)
+        })
 
-        if (this.editando) {
-          response = await axios.put(`/api/mascotas/${this.mascotaId}`, this.form)
-        } else {
-          response = await axios.post('/api/mascotas', this.form)
-        }
+        const data = await res.json()
+        if (!res.ok) return alert('Error: ' + (data.message || 'Desconocido'))
 
-        alert(response.data.mensaje)
+        alert(data.mensaje)
         this.resetear()
-        await this.obtenerMascotas()
+        this.obtenerMascotas()
       } catch (e) {
         console.error(e)
-
-        if (e.response) {
-          alert('Error: ' + (e.response.data.message || 'Desconocido'))
-        } else {
-          alert('Error al guardar')
-        }
+        alert('Error al guardar')
       }
     },
 
@@ -297,11 +275,10 @@ export default {
 
     async eliminarMascota(id) {
       if (!confirm('¿Eliminar mascota?')) return
-
       try {
-        const { data } = await axios.delete(`/api/mascotas/${id}`)
+        const data = await (await fetch(`/api/mascotas/${id}`, { method: 'DELETE' })).json()
         alert(data.mensaje)
-        await this.obtenerMascotas()
+        this.obtenerMascotas()
       } catch (e) {
         console.error(e)
         alert('Error al eliminar')
@@ -312,7 +289,6 @@ export default {
       this.editando = false
       this.mascotaId = null
       this.errores.rut = ''
-      this.errores.telefono = ''
       this.form = {
         rut: '',
         nombre_dueno: '',
@@ -330,7 +306,6 @@ export default {
       this.paginaActual = nuevaPagina
     }
   },
-
   computed: {
     totalPaginas() {
       return Math.ceil(this.mascotas.length / this.perPage) || 1
