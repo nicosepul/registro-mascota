@@ -24,6 +24,38 @@ class MascotaController extends Controller
         return response()->json(Raza::all());
     }
 
+    // VALIDAR si el RUT del dueño existe
+    public function existeRut(string $rut)
+    {
+        $rutNormalizado = $this->normalizarRut($rut);
+
+        if (!$this->esRutValido($rutNormalizado)) {
+            return response()->json([
+                'mensaje' => 'El RUT ingresado no es válido'
+            ], 422);
+        }
+
+        $dueno = $this->buscarDuenoPorRutNormalizado($rutNormalizado);
+
+        if (!$dueno) {
+            return response()->json([
+                'existe' => false,
+                'mensaje' => 'RUT no registrado'
+            ]);
+        }
+
+        return response()->json([
+            'existe' => true,
+            'dueno' => [
+                'rut' => $dueno->rut,
+                'nombre' => $dueno->nombre,
+                'apellido' => $dueno->apellido,
+                'telefono' => $dueno->telefono,
+                'direccion' => $dueno->direccion,
+            ]
+        ]);
+    }
+
     // GUARDAR nueva mascota
     public function store(Request $request)
     {
@@ -38,24 +70,31 @@ class MascotaController extends Controller
             'edad' => 'required|integer|min:0',
         ]);
 
-        // Buscar dueño por rut o crearlo
-        $dueno = Dueno::firstOrCreate(
-            ['rut' => $request->rut],
-            [
+        $rutNormalizado = $this->normalizarRut($request->rut);
+        if (!$this->esRutValido($rutNormalizado)) {
+            return response()->json([
+                'mensaje' => 'El RUT ingresado no es válido'
+            ], 422);
+        }
+
+        $dueno = $this->buscarDuenoPorRutNormalizado($rutNormalizado);
+
+        if (!$dueno) {
+            $dueno = Dueno::create([
+                'rut' => $rutNormalizado,
                 'nombre' => $request->nombre_dueno,
                 'apellido' => $request->apellido_dueno,
                 'telefono' => $request->telefono,
                 'direccion' => $request->direccion,
-            ]
-        );
-
-        // Si ya existía, actualizamos sus datos
-        $dueno->update([
-            'nombre' => $request->nombre_dueno,
-            'apellido' => $request->apellido_dueno,
-            'telefono' => $request->telefono,
-            'direccion' => $request->direccion,
-        ]);
+            ]);
+        } else {
+            $dueno->update([
+                'nombre' => $request->nombre_dueno,
+                'apellido' => $request->apellido_dueno,
+                'telefono' => $request->telefono,
+                'direccion' => $request->direccion,
+            ]);
+        }
 
         // Crear mascota
         $mascota = Mascota::create([
@@ -93,20 +132,36 @@ class MascotaController extends Controller
             'edad' => 'required|integer|min:0',
         ]);
 
-        $mascota = Mascota::findOrFail($id);
-        $dueno = $mascota->dueno;
+        $rutNormalizado = $this->normalizarRut($request->rut);
+        if (!$this->esRutValido($rutNormalizado)) {
+            return response()->json([
+                'mensaje' => 'El RUT ingresado no es válido'
+            ], 422);
+        }
 
-        // Actualizar dueño
-        $dueno->update([
-            'rut' => $request->rut,
-            'nombre' => $request->nombre_dueno,
-            'apellido' => $request->apellido_dueno,
-            'telefono' => $request->telefono,
-            'direccion' => $request->direccion,
-        ]);
+        $mascota = Mascota::findOrFail($id);
+        $dueno = $this->buscarDuenoPorRutNormalizado($rutNormalizado);
+
+        if (!$dueno) {
+            $dueno = Dueno::create([
+                'rut' => $rutNormalizado,
+                'nombre' => $request->nombre_dueno,
+                'apellido' => $request->apellido_dueno,
+                'telefono' => $request->telefono,
+                'direccion' => $request->direccion,
+            ]);
+        } else {
+            $dueno->update([
+                'nombre' => $request->nombre_dueno,
+                'apellido' => $request->apellido_dueno,
+                'telefono' => $request->telefono,
+                'direccion' => $request->direccion,
+            ]);
+        }
 
         // Actualizar mascota
         $mascota->update([
+            'dueno_id' => $dueno->id,
             'raza_id' => $request->raza_id,
             'nombre' => $request->nombre_mascota,
             'edad' => $request->edad,
@@ -127,5 +182,38 @@ class MascotaController extends Controller
         return response()->json([
             'mensaje' => 'Mascota eliminada correctamente'
         ]);
+    }
+
+    private function normalizarRut(string $rut): string
+    {
+        return strtoupper(str_replace(['.', '-'], '', trim($rut)));
+    }
+
+    private function esRutValido(string $rutNormalizado): bool
+    {
+        if (!preg_match('/^[0-9]{7,8}[0-9K]$/', $rutNormalizado)) {
+            return false;
+        }
+
+        $cuerpo = substr($rutNormalizado, 0, -1);
+        $dvIngresado = substr($rutNormalizado, -1);
+
+        $suma = 0;
+        $multiplicador = 2;
+
+        for ($i = strlen($cuerpo) - 1; $i >= 0; $i--) {
+            $suma += (int) $cuerpo[$i] * $multiplicador;
+            $multiplicador = $multiplicador === 7 ? 2 : $multiplicador + 1;
+        }
+
+        $resto = 11 - ($suma % 11);
+        $dvEsperado = $resto === 11 ? '0' : ($resto === 10 ? 'K' : (string) $resto);
+
+        return $dvIngresado === $dvEsperado;
+    }
+
+    private function buscarDuenoPorRutNormalizado(string $rutNormalizado): ?Dueno
+    {
+        return Dueno::whereRaw("REPLACE(REPLACE(UPPER(rut), '.', ''), '-', '') = ?", [$rutNormalizado])->first();
     }
 }

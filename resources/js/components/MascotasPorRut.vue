@@ -3,7 +3,7 @@
     <h2>Gestión de Mascotas por RUT</h2>
 
     <div class="search-box">
-      <input v-model="rut" type="text" placeholder="Ingrese RUT del dueño" @keyup.enter="buscarMascotas" />
+      <input v-model="rut" type="text" placeholder="Ingrese RUT del dueño" @input="formatearRut" @keyup.enter="buscarMascotas" />
       <button @click="buscarMascotas">Consultar</button>
     </div>
 
@@ -52,8 +52,23 @@ export default {
     }
   },
   methods: {
+    formatearRut() {
+      let valor = this.rut.replace(/[^0-9kK]/g, '')
+
+      if (valor.length <= 1) {
+        this.rut = valor
+        return
+      }
+
+      let cuerpo = valor.slice(0, -1)
+      let dv = valor.slice(-1).toUpperCase()
+
+      cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+      this.rut = cuerpo + '-' + dv
+    },
+
     async buscarMascotas() {
-      if (!this.rut) return alert("Ingrese un RUT");
+      if (!this.rut.trim()) return alert('Ingrese un RUT')
       
       this.mascotas = [];
       this.resultado = null;

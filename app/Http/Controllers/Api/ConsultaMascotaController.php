@@ -17,10 +17,17 @@ class ConsultaMascotaController extends Controller
             'nombre_mascota' => 'required|string',
         ]);
 
+        $rutNormalizado = $this->normalizarRut($request->rut);
+        if (!$this->esRutValido($rutNormalizado)) {
+            return response()->json([
+                'mensaje' => 'El RUT ingresado no es válido'
+            ], 422);
+        }
+
         $mascota = Mascota::with(['dueno', 'raza'])
             ->where('nombre', $request->nombre_mascota)
-            ->whereHas('dueno', function ($query) use ($request) {
-                $query->where('rut', $request->rut);
+            ->whereHas('dueno', function ($query) use ($rutNormalizado) {
+                $query->whereRaw("REPLACE(REPLACE(UPPER(rut), '.', ''), '-', '') = ?", [$rutNormalizado]);
             })
             ->first();
 
@@ -36,9 +43,16 @@ class ConsultaMascotaController extends Controller
     // 2) Buscar mascotas por RUT del dueño
     public function mascotasPorRut($rut)
     {
+        $rutNormalizado = $this->normalizarRut($rut);
+        if (!$this->esRutValido($rutNormalizado)) {
+            return response()->json([
+                'mensaje' => 'El RUT ingresado no es válido'
+            ], 422);
+        }
+
         $mascotas = Mascota::with(['dueno', 'raza'])
-            ->whereHas('dueno', function ($query) use ($rut) {
-                $query->where('rut', $rut);
+            ->whereHas('dueno', function ($query) use ($rutNormalizado) {
+                $query->whereRaw("REPLACE(REPLACE(UPPER(rut), '.', ''), '-', '') = ?", [$rutNormalizado]);
             })
             ->get();
 
@@ -91,4 +105,32 @@ public function verAtenciones($mascota_id)
 
     return response()->json($atenciones);
 }
+
+    private function normalizarRut(string $rut): string
+    {
+        return strtoupper(str_replace(['.', '-'], '', trim($rut)));
+    }
+
+    private function esRutValido(string $rutNormalizado): bool
+    {
+        if (!preg_match('/^[0-9]{7,8}[0-9K]$/', $rutNormalizado)) {
+            return false;
+        }
+
+        $cuerpo = substr($rutNormalizado, 0, -1);
+        $dvIngresado = substr($rutNormalizado, -1);
+
+        $suma = 0;
+        $multiplicador = 2;
+
+        for ($i = strlen($cuerpo) - 1; $i >= 0; $i--) {
+            $suma += (int) $cuerpo[$i] * $multiplicador;
+            $multiplicador = $multiplicador === 7 ? 2 : $multiplicador + 1;
+        }
+
+        $resto = 11 - ($suma % 11);
+        $dvEsperado = $resto === 11 ? '0' : ($resto === 10 ? 'K' : (string) $resto);
+
+        return $dvIngresado === $dvEsperado;
+    }
 }

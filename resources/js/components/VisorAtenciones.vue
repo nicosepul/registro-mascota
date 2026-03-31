@@ -12,6 +12,7 @@
             v-model="rut"
             type="text"
             class="form-control"
+            @input="formatearRut"
             placeholder="Ingrese RUT del dueño"
           />
         </div>
@@ -118,6 +119,22 @@ export default {
     }
   },
   methods: {
+    formatearRut() {
+      this.mensaje = ''
+      let valor = this.rut.replace(/[^0-9kK]/g, '')
+
+      if (valor.length <= 1) {
+        this.rut = valor
+        return
+      }
+
+      let cuerpo = valor.slice(0, -1)
+      const dv = valor.slice(-1).toUpperCase()
+
+      cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+      this.rut = cuerpo + '-' + dv
+    },
+
     async buscarMascotas() {
       this.mensaje = ''
       this.mascotas = []

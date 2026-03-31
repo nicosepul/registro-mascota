@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('mascota_id')->constrained('mascotas')->onDelete('cascade');
             $table->date('fecha_atencion');
-            $table->string('motivo_consulta');
+            $table->string('motivo_consulta', 255);
             $table->text('sintomas')->nullable();
             $table->text('diagnostico')->nullable();
             $table->text('tratamiento')->nullable();
