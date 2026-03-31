@@ -6,7 +6,7 @@
     <title>Registro de Mascotas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <?php echo app('Illuminate\Foundation\Vite')('resources/js/app.js'); ?>
-</head>
+    <link rel="icon" type="image/png" href="<?php echo e(asset('favicon.png')); ?>">
 <body>
     <div id="app"></div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
