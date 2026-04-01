@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Dueno;
 
@@ -13,6 +12,6 @@ class DuenoSeeder extends Seeder
      */
     public function run(): void
     {
-        Dueno::factory()->count(20)->create();
+        Dueno::factory()->count(120)->create();
     }
 }

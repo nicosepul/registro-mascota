@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Especie;
 
 class Mascota extends Model
 {
@@ -14,8 +15,15 @@ class Mascota extends Model
     protected $fillable = [
         'dueno_id',
         'raza_id',
+        'especie_id',
         'nombre',
+        'sexo',
+        'fecha_nacimiento',
+        'peso',
+        'color',
+        'procedencia',
         'edad',
+        'senales_particulares',
     ];
 
     // La mascota pertenece a un dueño
@@ -28,6 +36,12 @@ class Mascota extends Model
     public function raza()
     {
         return $this->belongsTo(Raza::class, 'raza_id');
+    }
+
+    // La mascota pertenece a una especie
+    public function especie()
+    {
+        return $this->belongsTo(Especie::class, 'especie_id');
     }
 
      // Una mascota puede tener muchas atenciones

@@ -4,16 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dueno;
+use App\Models\Especie;
 use App\Models\Mascota;
 use App\Models\Raza;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class MascotaController extends Controller
 {
     // LISTAR todas las mascotas con dueño y raza
     public function index()
     {
-        $mascotas = Mascota::with(['dueno', 'raza'])->get();
+        $mascotas = Mascota::with(['dueno', 'raza', 'especie'])->get();
 
         return response()->json($mascotas);
     }
@@ -21,7 +23,21 @@ class MascotaController extends Controller
     // LISTAR razas para el select
     public function razas()
     {
-        return response()->json(Raza::all());
+        $especieId = request()->query('especie_id');
+
+        $query = Raza::query()->orderBy('nombre');
+
+        if ($especieId) {
+            $query->where('especie_id', $especieId);
+        }
+
+        return response()->json($query->get());
+    }
+
+    // LISTAR especies para el select
+    public function especies()
+    {
+        return response()->json(Especie::orderBy('nombre')->get());
     }
 
     // VALIDAR si el RUT del dueño existe
@@ -66,8 +82,20 @@ class MascotaController extends Controller
             'telefono' => 'required|string|max:25',
             'direccion' => 'required|string|max:255',
             'nombre_mascota' => 'required|string|max:255',
-            'raza_id' => 'required|exists:razas,id',
+            'especie_id' => 'required|exists:especies,id',
+            'sexo' => 'required|in:Macho,Hembra',
+            'fecha_nacimiento' => 'required|date',
+            'peso' => 'required|numeric|min:0|max:999.99',
+            'color' => 'required|string|max:80',
+            'procedencia' => 'required|string|max:120',
+            'raza_id' => [
+                'required',
+                Rule::exists('razas', 'id')->where(function ($query) use ($request) {
+                    $query->where('especie_id', $request->especie_id);
+                }),
+            ],
             'edad' => 'required|integer|min:0',
+            'senales_particulares' => 'nullable|string',
         ]);
 
         $rutNormalizado = $this->normalizarRut($request->rut);
@@ -100,20 +128,27 @@ class MascotaController extends Controller
         $mascota = Mascota::create([
             'dueno_id' => $dueno->id,
             'raza_id' => $request->raza_id,
+            'especie_id' => $request->especie_id,
             'nombre' => $request->nombre_mascota,
+            'sexo' => $request->sexo,
+            'fecha_nacimiento' => $request->fecha_nacimiento,
+            'peso' => $request->peso,
+            'color' => $request->color,
+            'procedencia' => $request->procedencia,
             'edad' => $request->edad,
+            'senales_particulares' => $request->senales_particulares,
         ]);
 
         return response()->json([
             'mensaje' => 'Mascota registrada correctamente',
-            'mascota' => $mascota->load(['dueno', 'raza'])
+            'mascota' => $mascota->load(['dueno', 'raza', 'especie'])
         ], 201);
     }
 
     // MOSTRAR una mascota
     public function show($id)
     {
-        $mascota = Mascota::with(['dueno', 'raza'])->findOrFail($id);
+        $mascota = Mascota::with(['dueno', 'raza', 'especie'])->findOrFail($id);
 
         return response()->json($mascota);
     }
@@ -128,8 +163,20 @@ class MascotaController extends Controller
             'telefono' => 'required|string|max:25',
             'direccion' => 'required|string|max:255',
             'nombre_mascota' => 'required|string|max:255',
-            'raza_id' => 'required|exists:razas,id',
+            'especie_id' => 'required|exists:especies,id',
+            'sexo' => 'required|in:Macho,Hembra',
+            'fecha_nacimiento' => 'required|date',
+            'peso' => 'required|numeric|min:0|max:999.99',
+            'color' => 'required|string|max:80',
+            'procedencia' => 'required|string|max:120',
+            'raza_id' => [
+                'required',
+                Rule::exists('razas', 'id')->where(function ($query) use ($request) {
+                    $query->where('especie_id', $request->especie_id);
+                }),
+            ],
             'edad' => 'required|integer|min:0',
+            'senales_particulares' => 'nullable|string',
         ]);
 
         $rutNormalizado = $this->normalizarRut($request->rut);
@@ -163,13 +210,20 @@ class MascotaController extends Controller
         $mascota->update([
             'dueno_id' => $dueno->id,
             'raza_id' => $request->raza_id,
+            'especie_id' => $request->especie_id,
             'nombre' => $request->nombre_mascota,
+            'sexo' => $request->sexo,
+            'fecha_nacimiento' => $request->fecha_nacimiento,
+            'peso' => $request->peso,
+            'color' => $request->color,
+            'procedencia' => $request->procedencia,
             'edad' => $request->edad,
+            'senales_particulares' => $request->senales_particulares,
         ]);
 
         return response()->json([
             'mensaje' => 'Mascota actualizada correctamente',
-            'mascota' => $mascota->load(['dueno', 'raza'])
+            'mascota' => $mascota->load(['dueno', 'raza', 'especie'])
         ]);
     }
 

@@ -18,8 +18,10 @@ class AtencionFactory extends Factory
      */
     public function definition(): array
     {
+        $mascotaId = Mascota::query()->inRandomOrder()->value('id') ?? Mascota::factory()->create()->id;
+
         return [
-            'mascota_id' => Mascota::pluck('id')->random(), // Elige una mascota al azar de la DB
+            'mascota_id' => $mascotaId,
             'fecha_atencion' => fake()->dateTimeBetween('-1 year', 'now'),
             'motivo_consulta' => fake()->sentence(),
             'sintomas' => fake()->text(100),

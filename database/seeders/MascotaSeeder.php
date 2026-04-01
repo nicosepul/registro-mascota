@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class MascotaSeeder extends Seeder
@@ -12,6 +11,6 @@ class MascotaSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\Mascota::factory(30)->create();
+        \App\Models\Mascota::factory(260)->create();
     }
 }

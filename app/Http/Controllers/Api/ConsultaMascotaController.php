@@ -24,7 +24,7 @@ class ConsultaMascotaController extends Controller
             ], 422);
         }
 
-        $mascota = Mascota::with(['dueno', 'raza'])
+        $mascota = Mascota::with(['dueno', 'raza', 'especie'])
             ->where('nombre', $request->nombre_mascota)
             ->whereHas('dueno', function ($query) use ($rutNormalizado) {
                 $query->whereRaw("REPLACE(REPLACE(UPPER(rut), '.', ''), '-', '') = ?", [$rutNormalizado]);
@@ -50,7 +50,7 @@ class ConsultaMascotaController extends Controller
             ], 422);
         }
 
-        $mascotas = Mascota::with(['dueno', 'raza'])
+        $mascotas = Mascota::with(['dueno', 'raza', 'especie'])
             ->whereHas('dueno', function ($query) use ($rutNormalizado) {
                 $query->whereRaw("REPLACE(REPLACE(UPPER(rut), '.', ''), '-', '') = ?", [$rutNormalizado]);
             })

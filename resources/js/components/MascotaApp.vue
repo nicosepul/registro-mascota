@@ -30,13 +30,59 @@
       <input v-model="form.direccion" type="text" placeholder="Dirección" class="form-control mb-4" :disabled="camposDuenoBloqueados">
 
       <h5 class="mb-3">Datos de la Mascota</h5>
-      
-      <input v-model="form.nombre_mascota" type="text" placeholder="Nombre mascota" class="form-control mb-3">
-      <select v-model="form.raza_id" class="form-select mb-3">
-        <option value="">Seleccione una raza</option>
-        <option v-for="raza in razas" :key="raza.id" :value="raza.id">{{ raza.nombre }}</option>
-      </select>
-      <input v-model="form.edad" type="number" placeholder="Edad" class="form-control mb-4">
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Nombre mascota</label>
+          <input v-model="form.nombre_mascota" type="text" placeholder="Nombre mascota" class="form-control">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Especie</label>
+          <select v-model="form.especie_id" class="form-select" @change="onEspecieChange">
+            <option value="">Seleccione especie</option>
+            <option v-for="especie in especies" :key="especie.id" :value="especie.id">{{ especie.nombre }}</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Raza</label>
+          <select v-model="form.raza_id" class="form-select">
+            <option value="">Seleccione una raza</option>
+            <option v-for="raza in razas" :key="raza.id" :value="raza.id">{{ raza.nombre }}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Sexo</label>
+          <select v-model="form.sexo" class="form-select">
+            <option value="">Seleccione sexo</option>
+            <option value="Macho">Macho</option>
+            <option value="Hembra">Hembra</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Edad</label>
+          <input v-model="form.edad" type="number" min="0" placeholder="Edad" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Fecha de nacimiento</label>
+          <input v-model="form.fecha_nacimiento" type="date" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Peso (kg)</label>
+          <input v-model.number="form.peso" type="number" step="0.01" min="0" placeholder="Peso" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Color</label>
+          <input v-model="form.color" type="text" placeholder="Color" class="form-control">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Procedencia</label>
+          <input v-model="form.procedencia" type="text" placeholder="Procedencia" class="form-control">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Señales particulares</label>
+          <textarea v-model="form.senales_particulares" placeholder="Señales particulares (opcional)" class="form-control" rows="3"></textarea>
+        </div>
+      </div>
 
       <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">{{ editando ? 'Actualizar' : 'Guardar' }}</button>
@@ -50,7 +96,7 @@
       </div>
       <div class="card-body p-0">
         <div class="table-responsive">
-          <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
             <div>
               Mostrar
               <select v-model.number="perPage" class="form-select form-select-sm d-inline-block" style="width: auto;">
@@ -58,42 +104,80 @@
               </select>
               por página
             </div>
-            <div>Mostrando {{ desde }} - {{ hasta }} de {{ mascotas.length }}</div>
+            <div class="d-flex align-items-center gap-2">
+              <input
+                v-model="filtroRut"
+                type="text"
+                class="form-control form-control-sm"
+                style="width: 220px;"
+                placeholder="Buscar por RUT"
+                @input="paginaActual = 1"
+              >
+              <div>Mostrando {{ desde }} - {{ hasta }} de {{ mascotasFiltradas.length }}</div>
+            </div>
           </div>
-          <table class="table mbm-0">
+          <table class="table table-hover align-middle mb-0 d-none d-md-table">
             <thead class="table-light">
               <tr>
-                <th>ID</th>
                 <th>RUT</th>
-                <th>Nombre</th>
+                <th>Dueño</th>
                 <th>Mascota</th>
-                <th>Raza</th>
+                <th class="text-nowrap">Especie</th>
+                <th class="text-nowrap">Raza</th>
                 <th>Edad</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="mascota in mascotasPag" :key="mascota.id">
-                <td>{{ mascota.id }}</td>
-                <td>{{ formatearRutTabla(mascota.dueno.rut) }}</td>
+                <td class="text-nowrap">{{ formatearRutTabla(mascota.dueno.rut) }}</td>
                 <td>{{ mascota.dueno.nombre }} {{ mascota.dueno.apellido }}</td>
                 <td>{{ mascota.nombre }}</td>
-                <td>{{ mascota.raza.nombre }}</td>
-                <td>{{ mascota.edad }}</td>
-                <td>
+                <td class="col-mini"><span>{{ mascota.especie?.nombre || '-' }}</span></td>
+                <td class="col-mini"><span>{{ mascota.raza?.nombre || '-' }}</span></td>
+                <td class="text-nowrap">{{ mascota.edad }}</td>
+                <td class="text-nowrap">
                   <button @click="editarMascota(mascota)" class="btn btn-sm btn-warning me-2">Editar</button>
                   <button @click="eliminarMascota(mascota.id)" class="btn btn-sm btn-danger">Eliminar</button>
                 </td>
               </tr>
+              <tr v-if="mascotasPag.length === 0">
+                <td colspan="7" class="text-center text-muted py-3">No hay mascotas para el filtro ingresado</td>
+              </tr>
             </tbody>
           </table>
+
+          <div class="d-md-none p-2">
+            <div v-if="mascotasPag.length === 0" class="text-center text-muted py-3">
+              No hay mascotas para el filtro ingresado
+            </div>
+
+            <div v-for="mascota in mascotasPag" :key="`mobile-${mascota.id}`" class="card mb-2 shadow-sm">
+              <div class="card-body p-3">
+                <div class="d-flex justify-content-between mb-2">
+                  <strong>{{ mascota.nombre }}</strong>
+                  <span class="badge text-bg-light">{{ mascota.especie?.nombre || '-' }}</span>
+                </div>
+                <div class="small"><strong>RUT:</strong> {{ formatearRutTabla(mascota.dueno.rut) }}</div>
+                <div class="small"><strong>Dueño:</strong> {{ mascota.dueno.nombre }} {{ mascota.dueno.apellido }}</div>
+                <div class="small"><strong>Especie:</strong> {{ mascota.especie?.nombre || '-' }}</div>
+                <div class="small"><strong>Raza:</strong> {{ mascota.raza?.nombre || '-' }}</div>
+                <div class="small mb-2"><strong>Edad:</strong> {{ mascota.edad }}</div>
+                <div class="d-flex gap-2">
+                  <button @click="editarMascota(mascota)" class="btn btn-sm btn-warning flex-fill">Editar</button>
+                  <button @click="eliminarMascota(mascota.id)" class="btn btn-sm btn-danger flex-fill">Eliminar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <nav class="d-flex justify-content-center my-2" v-if="totalPaginas > 1">
-            <ul class="pagination mb-0">
+            <ul class="pagination pagination-sm flex-wrap justify-content-center mb-0">
               <li class="page-item" :class="{ disabled: paginaActual === 1 }">
                 <button class="page-link" @click="cambiarPagina(paginaActual - 1)">Anterior</button>
               </li>
-              <li class="page-item" :class="{ active: paginaActual === n }" v-for="n in totalPaginas" :key="n">
-                <button class="page-link" @click="cambiarPagina(n)">{{ n }}</button>
+              <li class="page-item" :class="{ active: paginaActual === n, disabled: n === '...' }" v-for="n in paginasVisibles" :key="`pag-${n}`">
+                <button class="page-link" @click="n !== '...' && cambiarPagina(n)">{{ n }}</button>
               </li>
               <li class="page-item" :class="{ disabled: paginaActual === totalPaginas }">
                 <button class="page-link" @click="cambiarPagina(paginaActual + 1)">Siguiente</button>
@@ -118,6 +202,7 @@ export default {
       vistaActual: 'formulario',
       mascotas: [],
       razas: [],
+      especies: [],
       editando: false,
       mascotaId: null,
       form: this.formularioVacio(),
@@ -128,6 +213,7 @@ export default {
       mensajeRut: '',
       duenoRegistrado: false,
       rutCheckTimer: null,
+      filtroRut: '',
       perPage: 10,
       paginaActual: 1,
       opcionesPagina: [5, 10, 20, 50]
@@ -137,6 +223,7 @@ export default {
   created() {
     this.obtenerMascotas()
     this.obtenerRazas()
+    this.obtenerEspecies()
   },
 
   beforeUnmount() {
@@ -154,8 +241,15 @@ export default {
         telefono: '',
         direccion: '',
         nombre_mascota: '',
+        especie_id: '',
+        sexo: '',
+        fecha_nacimiento: '',
+        peso: '',
+        color: '',
+        procedencia: '',
         raza_id: '',
-        edad: ''
+        edad: '',
+        senales_particulares: ''
       }
     },
 
@@ -278,9 +372,17 @@ export default {
       this.mensajeRut = ''
       this.errores.rut = ''
 
+      const limpiarCamposDueno = () => {
+        this.form.nombre_dueno = ''
+        this.form.apellido_dueno = ''
+        this.form.telefono = ''
+        this.form.direccion = ''
+      }
+
       if (!this.form.rut.trim()) {
         this.errores.rut = 'El RUT es obligatorio'
         this.duenoRegistrado = false
+        limpiarCamposDueno()
         return
       }
 
@@ -292,6 +394,7 @@ export default {
       if (!this.validarRut(this.form.rut)) {
         this.errores.rut = 'El RUT ingresado no es valido'
         this.duenoRegistrado = false
+        limpiarCamposDueno()
         return
       }
 
@@ -300,6 +403,7 @@ export default {
 
         if (!data?.existe || !data?.dueno) {
           this.duenoRegistrado = false
+          limpiarCamposDueno()
           this.mensajeRut = 'RUT nuevo. Complete datos del dueno para registrarlo.'
           return
         }
@@ -313,6 +417,7 @@ export default {
         this.mensajeRut = 'Usuario ya registrado. Campos del dueno bloqueados.'
       } catch (error) {
         this.duenoRegistrado = false
+        limpiarCamposDueno()
         this.errores.rut = error.response?.data?.mensaje || 'Error al validar RUT'
       }
     },
@@ -328,12 +433,30 @@ export default {
     },
 
     async obtenerRazas() {
+      const especieId = this.form.especie_id
+
       try {
-        const { data } = await axios.get('/api/razas')
+        const url = especieId ? `/api/razas?especie_id=${especieId}` : '/api/razas'
+        const { data } = await axios.get(url)
         this.razas = data
       } catch (error) {
         console.error('Error:', error)
         alert(this.obtenerMensajeError(error, 'Error al cargar razas'))
+      }
+    },
+
+    async onEspecieChange() {
+      this.form.raza_id = ''
+      await this.obtenerRazas()
+    },
+
+    async obtenerEspecies() {
+      try {
+        const { data } = await axios.get('/api/especies')
+        this.especies = data
+      } catch (error) {
+        console.error('Error:', error)
+        alert(this.obtenerMensajeError(error, 'Error al cargar especies'))
       }
     },
 
@@ -347,6 +470,12 @@ export default {
         this.form.telefono,
         this.form.direccion,
         this.form.nombre_mascota,
+        this.form.especie_id,
+        this.form.sexo,
+        this.form.fecha_nacimiento,
+        this.form.peso,
+        this.form.color,
+        this.form.procedencia,
         this.form.raza_id,
         this.form.edad
       ]
@@ -390,9 +519,18 @@ export default {
         telefono: m.dueno.telefono || '',
         direccion: m.dueno.direccion,
         nombre_mascota: m.nombre,
+        especie_id: m.especie_id || '',
+        sexo: m.sexo || '',
+        fecha_nacimiento: m.fecha_nacimiento || '',
+        peso: m.peso || '',
+        color: m.color || '',
+        procedencia: m.procedencia || '',
         raza_id: m.raza_id,
-        edad: m.edad
+        edad: m.edad,
+        senales_particulares: m.senales_particulares || ''
       }
+
+      this.obtenerRazas()
     },
 
     async eliminarMascota(id) {
@@ -428,21 +566,62 @@ export default {
     camposDuenoBloqueados() {
       return this.duenoRegistrado && !this.editando
     },
+    mascotasFiltradas() {
+      const filtro = this.normalizarRut(this.filtroRut)
+
+      if (!filtro) {
+        return this.mascotas
+      }
+
+      return this.mascotas.filter(mascota => {
+        const rutDueno = this.normalizarRut(mascota?.dueno?.rut)
+        return rutDueno.includes(filtro)
+      })
+    },
     totalPaginas() {
-      return Math.ceil(this.mascotas.length / this.perPage) || 1
+      return Math.ceil(this.mascotasFiltradas.length / this.perPage) || 1
+    },
+    paginasVisibles() {
+      const total = this.totalPaginas
+      const actual = this.paginaActual
+
+      if (total <= 7) {
+        return Array.from({ length: total }, (_, i) => i + 1)
+      }
+
+      if (actual <= 4) {
+        return [1, 2, 3, 4, 5, '...', total]
+      }
+
+      if (actual >= total - 3) {
+        return [1, '...', total - 4, total - 3, total - 2, total - 1, total]
+      }
+
+      return [1, '...', actual - 1, actual, actual + 1, '...', total]
     },
     mascotasPag() {
       const inicio = (this.paginaActual - 1) * this.perPage
       const fin = inicio + this.perPage
-      return this.mascotas.slice(inicio, fin)
+      return this.mascotasFiltradas.slice(inicio, fin)
     },
     desde() {
-      if (this.mascotas.length === 0) return 0
+      if (this.mascotasFiltradas.length === 0) return 0
       return (this.paginaActual - 1) * this.perPage + 1
     },
     hasta() {
-      return Math.min(this.paginaActual * this.perPage, this.mascotas.length)
+      return Math.min(this.paginaActual * this.perPage, this.mascotasFiltradas.length)
     }
   }
 }
 </script>
+
+<style scoped>
+.col-mini span {
+  display: inline-block;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.88rem;
+}
+</style>

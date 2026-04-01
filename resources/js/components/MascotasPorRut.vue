@@ -13,14 +13,18 @@
         <thead>
           <tr>
             <th>Nombre</th>
+            <th>Especie</th>
             <th>Raza</th>
+            <th>Sexo</th>
             <th>Acción</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="m in mascotas" :key="m.id">
             <td>{{ m.nombre }}</td>
+            <td>{{ m.especie?.nombre || '-' }}</td>
             <td>{{ m.raza.nombre }}</td>
+            <td>{{ m.sexo || '-' }}</td>
             <td><button @click="resultado = m">Ver Detalle</button></td>
           </tr>
         </tbody>
@@ -33,8 +37,15 @@
         <p><strong>RUT:</strong> {{ resultado.dueno.rut }}</p>
         <p><strong>Dirección:</strong> {{ resultado.dueno.direccion }}</p>
         <p><strong>Mascota:</strong> {{ resultado.nombre }}</p>
+        <p><strong>Especie:</strong> {{ resultado.especie?.nombre || 'Sin dato' }}</p>
+        <p><strong>Sexo:</strong> {{ resultado.sexo || 'Sin dato' }}</p>
+        <p><strong>Fecha nacimiento:</strong> {{ resultado.fecha_nacimiento || 'Sin dato' }}</p>
+        <p><strong>Peso:</strong> {{ resultado.peso || 'Sin dato' }} kg</p>
+        <p><strong>Color:</strong> {{ resultado.color || 'Sin dato' }}</p>
+        <p><strong>Procedencia:</strong> {{ resultado.procedencia || 'Sin dato' }}</p>
         <p><strong>Raza:</strong> {{ resultado.raza.nombre }}</p>
         <p><strong>Edad:</strong> {{ resultado.edad }} años</p>
+        <p><strong>Señales particulares:</strong> {{ resultado.senales_particulares || 'Sin dato' }}</p>
         <button @click="resultado = null">Cerrar Detalle</button>
     </div>
   </div>

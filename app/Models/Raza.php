@@ -10,7 +10,14 @@ class Raza extends Model
 
     protected $fillable = [
         'nombre',
+        'especie_id',
     ];
+
+    // Una raza pertenece a una especie
+    public function especie()
+    {
+        return $this->belongsTo(Especie::class, 'especie_id');
+    }
 
     // Una raza puede tener muchas mascotas
     public function mascotas()

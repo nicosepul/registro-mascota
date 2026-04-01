@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Atencion;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class AtencionSeeder extends Seeder
@@ -13,6 +12,6 @@ class AtencionSeeder extends Seeder
      */
     public function run(): void
     {
-        Atencion::factory()->count(50)->create();
+        Atencion::factory()->count(700)->create();
     }
 }

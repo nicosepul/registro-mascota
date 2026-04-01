@@ -53,10 +53,17 @@
         <div class="col-md-6">
           <p><strong>Id:</strong> {{ mascotaSeleccionada.id}}</p>
           <p><strong>Nombre:</strong> {{ mascotaSeleccionada.nombre}}</p>
+          <p><strong>Especie:</strong> {{ mascotaSeleccionada.especie?.nombre || 'Sin dato' }}</p>
+          <p><strong>Sexo:</strong> {{ mascotaSeleccionada.sexo || 'Sin dato' }}</p>
+          <p><strong>Fecha nacimiento:</strong> {{ mascotaSeleccionada.fecha_nacimiento || 'Sin dato' }}</p>
+          <p><strong>Peso:</strong> {{ mascotaSeleccionada.peso || 'Sin dato' }} kg</p>
         </div>
         <div class="col-md-6">
           <p><strong>Raza:</strong> {{ mascotaSeleccionada.raza.nombre }}</p>
+          <p><strong>Color:</strong> {{ mascotaSeleccionada.color || 'Sin dato' }}</p>
+          <p><strong>Procedencia:</strong> {{ mascotaSeleccionada.procedencia || 'Sin dato' }}</p>
           <p><strong>Edad:</strong> {{ mascotaSeleccionada.edad }}</p>
+          <p><strong>Señales particulares:</strong> {{ mascotaSeleccionada.senales_particulares || 'Sin dato' }}</p>
         </div>
       </div>
     </div>
